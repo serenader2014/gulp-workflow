@@ -19,6 +19,7 @@ var replace      = require('gulp-replace');
 var iconfont     = require('gulp-iconfont');
 var ghPage       = require('gulp-gh-pages');
 var imagemin     = require('gulp-imagemin');
+var stylish      = require('jshint-stylish');
 var sass         = require('gulp-ruby-sass');
 var minifyCss    = require('gulp-minify-css');
 var sourcemaps   = require('gulp-sourcemaps');
@@ -54,7 +55,7 @@ gulp.task('inject', function () {
                 var extname = path.extname(filepath);
                 filepath    = filepath.substr(5);
                 target      = target.path.split(__dirname)[1].split(path.sep).join('/').substr(4);
-                flag        = dep[target].exclude.indexOf(filepath) == -1 ? true : false;
+                flag        = dep[target].exclude.indexOf(filepath) === -1 ? true : false;
                 if (!flag) { return; }
 
                 if (extname === '.js') {
@@ -64,13 +65,12 @@ gulp.task('inject', function () {
                 }
                 return tmpl.replace('{{src}}', '{{@@asset}}' + filepath);
             }
-        })
+        });
     }
     function injectScript () {
         return inject(gulp.src('./gulpfile.js', {read: false}), {
             name: 'scripts',
             transform: function (filepath, file, i, lenght, target) {
-                var extname;
                 var str = '';
                 target  = target.path.split(__dirname)[1].split(path.sep).join('/').substr(4);
                 dep[target].include.scripts.forEach(function (s) {
@@ -84,8 +84,6 @@ gulp.task('inject', function () {
         return inject(gulp.src('./gulpfile.js', {read: false}), {
             name: 'styles',
             transform: function (filepath, file, i, lenght, target) {
-                var tmpl;
-                var extname;
                 var str = '';
                 target  = target.path.split(__dirname)[1].split(path.sep).join('/').substr(4);
                 dep[target].include.styles.forEach(function (s) {
@@ -100,35 +98,40 @@ gulp.task('inject', function () {
     .pipe(injectBowerFile())
     .pipe(injectScript())
     .pipe(injectCss())
-    .pipe(gulp.dest('./dist'))
-    .pipe(notify('inject dependencies to html files successfully'));
+    .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('localasset', ['inject'], function () {
     return gulp.src('./dist/*.html')
     .pipe(replace(/{{@@asset}}/ig, '.'))
-    .pipe(gulp.dest('./dist'))
-    .pipe(notify('use local asset'));
+    .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('compile-js', function () {
     return gulp.src('./src/scripts/*.js')
     .pipe(ngAnnotate({ single_quotes: true}))
-    .pipe(gulp.dest('./dist/scripts'))
-    .pipe(notify('js file compile successfully'));
+    .pipe(jshint())
+    .pipe(jshint.reporter(stylish))
+    .pipe(notify(function (file) {
+        if (file.jshint.success) { return false; }
+ 
+        var errors = file.jshint.results.map(function (data) {
+            if (data.error) {
+                return "(" + data.error.line + ':' + data.error.character + ') ' + data.error.reason;
+            }
+        }).join("\n");
+        return file.relative + " (" + file.jshint.results.length + " errors)\n" + errors;
+    }))
+    .pipe(gulp.dest('./dist/scripts'));
 });
 
 gulp.task('compile-html', ['inject', 'localasset']);
 
 gulp.task('compile-css', function () {
     return sass('./src/styles/app.scss', {style: 'expanded', sourcemap: true})
-    .on('error', function (err) {
-        console.log('Compile sass failed: ' + err.message);
-    })
     .pipe(autoPrefixer({browsers: ['last 2 versions']}))
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./dist/styles'))
-    .pipe(notify('sass file compile successfully'));
+    .pipe(gulp.dest('./dist/styles'));
 });
 
 gulp.task('build', ['clean'], function () {
@@ -150,14 +153,12 @@ gulp.task('build', ['clean'], function () {
     .pipe(assets.restore())
     .pipe(useref())
     .pipe(revReplace())
-    .pipe(gulp.dest('./build'))
-    .pipe(notify('project build successfully'));
+    .pipe(gulp.dest('./build'));
 });
 
-gulp.task('clean', function (cb) {
+gulp.task('clean', function () {
     return gulp.src('./build')
-        .pipe(vinylPaths(del))
-        .pipe(notify('delete previous built folder'));
+        .pipe(vinylPaths(del));
 });
 
 gulp.task('init', shell.task(['bower install']));
