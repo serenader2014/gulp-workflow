@@ -1,0 +1,33 @@
+{
+    "name": "frondend-workflow",
+    "version": "0.0.1",
+    "dependencies": {
+        "gulp"             : "*",
+        "gulp-concat"      : "*",
+        "gulp-autoprefixer": "*",
+        "gulp-jshint"      : "*",
+        "gulp-uglify"      : "*",
+        "gulp-minify-css"  : "*",
+        "gulp-ruby-sass"   : "*",
+        "gulp-rename"      : "*",
+        "gulp-shell"       : "*",
+        "gulp-sourcemaps"  : "*",
+        "gulp-iconfont"    : "*",
+        "gulp-iconfont-css": "*",
+        "gulp-gh-pages"    : "*",
+        "gulp-notify"      : "*",
+        "gulp-imagemin"    : "*",
+        "gulp-replace"     : "*",
+        "gulp-rev"         : "*",
+        "sprity"           : "*",
+        "gulp-inject"      : "*",
+        "gulp-ng-annotate" : "*",
+        "browser-sync"     : "*",
+        "main-bower-files" : "*",
+        "gulp-useref"      : "*",
+        "gulp-rev-replace" : "*",
+        "gulp-filter"      : "2.0.2",
+        "del"              : "*",
+        "vinyl-paths"      : "*"
+    }
+}

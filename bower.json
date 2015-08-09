@@ -1,0 +1,14 @@
+{
+    "name": "workflow",
+    "version": "0.0.0",
+    "dependencies": {
+        "jquery"          : "latest",
+        "angular"         : "latest",
+        "angular-animate" : "latest",
+        "angular-cookies" : "latest",
+        "angular-resource": "latest",
+        "angular-route"   : "latest",
+        "angular-sanitize": "latest",
+        "angular-touch"   : "latest"
+    }
+}

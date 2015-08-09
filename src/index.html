@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>Angular.js Demo</title>
+    <meta name="viewport" content="initialscale=1.0,width=device-width,user-scalable=no">
+
+
+    <!-- build:css styles/app.min.css -->
+    <!-- styles:js -->
+    <!-- endinject -->
+    <!-- endbuild -->
+</head>
+<body ng-controller="ctrl">
+    <div class="wrapper">
+        <button ng-click="clickButton()">something</button>
+
+        <p>this is a p tag</p>
+        <div>this is another tag</div>
+        <div>{{content}}</div>
+        <div style="height:1000px;">
+            this is long content
+
+        </div>
+    </div>
+
+
+    <!-- build:js scripts/app.min.js -->
+    <!-- bower:js -->
+    <!-- endinject -->
+
+    <!-- scripts:js -->
+    <!-- endinject -->
+    <!-- endbuild -->
+</body>
+</html>

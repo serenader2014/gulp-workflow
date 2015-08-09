@@ -1,0 +1,21 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    font-size: 16px;
+    font-family: 'Microsoft YAHEI';
+    button {
+        background: #fcc;
+        border: none;
+        padding: 10px;
+    }
+}
+
+.wrapper {
+    width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
