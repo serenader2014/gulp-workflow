@@ -1,0 +1,28 @@
+doctype html
+html(lang='en', ng-app='app')
+    head
+        meta(charset='UTF-8')/
+        title Angular.js Demo
+        meta(name='viewport', content='initial-scale=1.0,width=device-width,user-scalable=no')/
+
+        // build:css styles/app.min.css
+        // styles:js
+        // endinject
+        // endbuild
+    body(ng-controller='ctrl')
+        .wrapper
+            button(ng-click='clickButton()') something
+            p this is a p tag
+            div this is another tag
+            #duplicate this is another div
+            div {{content}}
+            div(style='height:1000px') this is long content
+
+
+        // build:js scripts/app.min.js
+        // bower:js
+        // endinject
+
+        // scripts:js
+        // endinject
+        // endbuild

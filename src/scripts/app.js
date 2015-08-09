@@ -5,4 +5,6 @@ app.controller('ctrl', function ($scope) {
         $scope.content = $scope.content ? '' : 'button clicked';
     };
 
+    console.log('changed');
+
 }); 

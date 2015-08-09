@@ -10,7 +10,7 @@
         "exclude": ["/libs/angular-animate/angular-animate.js"],
         "include": {
             "scripts": ["/scripts/module.js"],
-            "styles": ["/styles/app.css"]
+            "styles": ["/styles/module.css"]
         }
     }
 }
