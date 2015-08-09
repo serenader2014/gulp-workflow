@@ -11,6 +11,7 @@ var filter       = require('gulp-filter');
 var browserSync  = require('browser-sync');
 var concat       = require('gulp-concat');
 var jshint       = require('gulp-jshint');
+var csslint      = require('gulp-csslint');
 var rename       = require('gulp-rename');
 var useref       = require('gulp-useref');
 var bowerFile    = require('main-bower-files');
@@ -117,10 +118,10 @@ gulp.task('compile-js', function () {
  
         var errors = file.jshint.results.map(function (data) {
             if (data.error) {
-                return "(" + data.error.line + ':' + data.error.character + ') ' + data.error.reason;
+                return '(' + data.error.line + ':' + data.error.character + ') ' + data.error.reason;
             }
-        }).join("\n");
-        return file.relative + " (" + file.jshint.results.length + " errors)\n" + errors;
+        }).join('\n');
+        return file.relative + ' (' + file.jshint.results.length + ' errors)\n' + errors;
     }))
     .pipe(gulp.dest('./dist/scripts'));
 });
@@ -130,6 +131,18 @@ gulp.task('compile-html', ['inject', 'localasset']);
 gulp.task('compile-css', function () {
     return sass('./src/styles/app.scss', {style: 'expanded', sourcemap: true})
     .pipe(autoPrefixer({browsers: ['last 2 versions']}))
+    .pipe(csslint())
+    .pipe(csslint.reporter())
+    .pipe(notify(function (file) {
+        if (file.csslint.success) { return false; }
+
+        var errors = file.csslint.results.map(function (data) {
+            if (data.error) {
+                return data.error.line + ':' + data.error.message;
+            }
+        }).join('\n');
+        return file.relative + ' (' + file.csslint.results.length + ' errors)\n' + errors; 
+    }))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./dist/styles'));
 });

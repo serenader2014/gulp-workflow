@@ -7,6 +7,7 @@
     "gulp": "*",
     "gulp-autoprefixer": "*",
     "gulp-concat": "*",
+    "gulp-csslint": "^0.1.5",
     "gulp-filter": "2.0.2",
     "gulp-gh-pages": "*",
     "gulp-iconfont": "*",
