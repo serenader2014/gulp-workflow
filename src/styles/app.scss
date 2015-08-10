@@ -1,3 +1,5 @@
+@import 'sprite';
+
 html, body {
     padding: 0;
     margin: 0;
@@ -18,4 +20,16 @@ html {
     width: 400px;
     margin: 0 auto;
     text-align: center;
+}
+
+.weibo {
+    @include sprite($weibo);
+}
+
+.wechat {
+    @include sprite($wechat);
+}
+
+.qzone {
+    @include sprite($video);
 }

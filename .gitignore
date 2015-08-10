@@ -2,3 +2,4 @@ node_modules
 dist
 build
 .sass-cache
+src/styles/sprite.scss

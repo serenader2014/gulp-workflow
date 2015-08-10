@@ -1,35 +1,34 @@
 var del          = require('del');
 var gulp         = require('gulp');
 var path         = require('path');
-var sprity       = require('sprity');
 var rev          = require('gulp-rev');
+var sass         = require('gulp-sass');
 var jade         = require('gulp-jade');
 var size         = require('gulp-size');
+var qiniu        = require('gulp-qiniu');
+var sprite       = require('gulp.spritesmith');
 var shell        = require('gulp-shell');
-var changed      = require('gulp-changed');
 var vinylPaths   = require('vinyl-paths');
 var uglify       = require('gulp-uglify');
 var notify       = require('gulp-notify');
 var filter       = require('gulp-filter');
-var browserSync  = require('browser-sync');
-var concat       = require('gulp-concat');
 var jshint       = require('gulp-jshint');
-var csslint      = require('gulp-csslint');
-var htmlhint     = require('gulp-htmlhint');
-var minifyHtml   = require('gulp-htmlmin');
-var rename       = require('gulp-rename');
 var useref       = require('gulp-useref');
-var qiniu        = require('gulp-qiniu');
-var bowerFile    = require('main-bower-files');
 var inject       = require('gulp-inject');
+var plumber      = require('gulp-plumber');
+var changed      = require('gulp-changed');
+var csslint      = require('gulp-csslint');
 var replace      = require('gulp-replace');
+var minifyHtml   = require('gulp-htmlmin');
+var browserSync  = require('browser-sync');
+var htmlhint     = require('gulp-htmlhint');
 var iconfont     = require('gulp-iconfont');
 var ghPage       = require('gulp-gh-pages');
 var imagemin     = require('gulp-imagemin');
 var stylish      = require('jshint-stylish');
-var sass         = require('gulp-sass');
 var minifyCss    = require('gulp-minify-css');
 var sourcemaps   = require('gulp-sourcemaps');
+var bowerFile    = require('main-bower-files');
 var ngAnnotate   = require('gulp-ng-annotate');
 var revReplace   = require('gulp-rev-replace');
 var autoPrefixer = require('gulp-autoprefixer');
@@ -126,10 +125,11 @@ function injectCss () {
 gulp.task('serve', ['compile:css', 'compile:html', 'compile:js'], function () {
     browserSync.init({ server: { baseDir: './dist' }, port: 9000 });
 
-    gulp.watch('./dist/**').on('change', browserSync.reload);
-    gulp.watch('./src/styles/*.scss', ['compile:css']);
-    gulp.watch('./src/scripts/*.js', ['compile:js']);
-    gulp.watch(['./src/*.jade', './dependencies-map.json'], ['compile:html']);
+    gulp.watch('dist/**').on('change', browserSync.reload);
+    gulp.watch('src/styles/*.scss', ['compile:css']);
+    gulp.watch('src/scripts/*.js', ['compile:js']);
+    gulp.watch(['src/*.jade', 'dependencies-map.json'], ['compile:html']);
+    gulp.watch('src/images/*.png', ['sprites']);
 }); 
 
 gulp.task('inject:dep', function () {
@@ -143,8 +143,7 @@ gulp.task('inject:dep', function () {
     .pipe(injectBowerFile())
     .pipe(injectScript())
     .pipe(injectCss())
-    .pipe(gulp.dest('./dist'))
-    .pipe(notify('inject dependencies files to html file successfully'));
+    .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('asset:local', ['inject:dep'], function () {
@@ -170,6 +169,18 @@ gulp.task('qiniu', function () {
     }));
 });
 
+gulp.task('sprites', function () {
+    var imageFilter = filter('*.png');
+    var sassFilter = filter('*.scss');
+    return gulp.src('./src/images/*')
+    .pipe(sprite({ imgName: 'sprite.png', cssName: 'sprite.scss', imgPath: '../images/sprite.png' }))
+    .pipe(imageFilter)
+    .pipe(gulp.dest('./dist/images'))
+    .pipe(imageFilter.restore())
+    .pipe(sassFilter)
+    .pipe(gulp.dest('./src/styles'));
+});
+
 gulp.task('compile:js', function () {
     return gulp.src('./src/scripts/*.js')
     .pipe(changed('./dist/scripts'))
@@ -177,12 +188,12 @@ gulp.task('compile:js', function () {
     .pipe(jshint())
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify))
-    .pipe(gulp.dest('./dist/scripts'))
-    .pipe(notify('compile js successfully'));
+    .pipe(gulp.dest('./dist/scripts'));
 });
 
-gulp.task('compile:css', function () {
+gulp.task('compile:css', ['sprites'], function () {
     return gulp.src('./src/styles/*.scss')
+    .pipe(plumber())
     .pipe(changed('./dist/styles'))
     .pipe(sourcemaps.init())
     .pipe(sass({outputStyle: 'expanded'}))
@@ -191,8 +202,7 @@ gulp.task('compile:css', function () {
     .pipe(csslint.reporter())
     .pipe(notify(csshintNotify))
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./dist/styles'))
-    .pipe(notify('compile css successfully'));
+    .pipe(gulp.dest('./dist/styles'));
 });
 
 gulp.task('compile:html', ['inject:dep', 'asset:local']);
