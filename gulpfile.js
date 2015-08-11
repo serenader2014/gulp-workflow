@@ -6,7 +6,6 @@ var sass         = require('gulp-sass');
 var jade         = require('gulp-jade');
 var size         = require('gulp-size');
 var qiniu        = require('gulp-qiniu');
-var sprite       = require('gulp.spritesmith');
 var shell        = require('gulp-shell');
 var vinylPaths   = require('vinyl-paths');
 var uglify       = require('gulp-uglify');
@@ -28,6 +27,7 @@ var imagemin     = require('gulp-imagemin');
 var stylish      = require('jshint-stylish');
 var minifyCss    = require('gulp-minify-css');
 var sourcemaps   = require('gulp-sourcemaps');
+var sprite       = require('gulp.spritesmith');
 var bowerFile    = require('main-bower-files');
 var ngAnnotate   = require('gulp-ng-annotate');
 var revReplace   = require('gulp-rev-replace');
@@ -126,7 +126,7 @@ gulp.task('serve', ['compile:css', 'compile:html', 'compile:js'], function () {
     browserSync.init({ server: { baseDir: './dist' }, port: 9000 });
 
     gulp.watch('dist/**').on('change', browserSync.reload);
-    gulp.watch('src/styles/*.scss', ['compile:css']);
+    gulp.watch('src/styles/**/*.scss', ['compile:css']);
     gulp.watch('src/scripts/*.js', ['compile:js']);
     gulp.watch(['src/*.jade', 'dependencies-map.json'], ['compile:html']);
     gulp.watch('src/images/*.png', ['sprites']);
@@ -137,7 +137,7 @@ gulp.task('inject:dep', function () {
     return gulp.src('./src/*.jade')
     .pipe(changed('./dist'))
     .pipe(jade({ pretty: true }))
-    .pipe(htmlhint())
+    .pipe(htmlhint(config.htmlhint))
     .pipe(htmlhint.reporter())
     .pipe(notify(htmlhintNotify))
     .pipe(injectBowerFile())
@@ -172,20 +172,20 @@ gulp.task('qiniu', function () {
 gulp.task('sprites', function () {
     var imageFilter = filter('*.png');
     var sassFilter = filter('*.scss');
-    return gulp.src('./src/images/*')
+    return gulp.src('./src/images/icon/*')
     .pipe(sprite({ imgName: 'sprite.png', cssName: 'sprite.scss', imgPath: '../images/sprite.png' }))
     .pipe(imageFilter)
     .pipe(gulp.dest('./dist/images'))
     .pipe(imageFilter.restore())
     .pipe(sassFilter)
-    .pipe(gulp.dest('./src/styles'));
+    .pipe(gulp.dest('./src/styles/vars'));
 });
 
 gulp.task('compile:js', function () {
     return gulp.src('./src/scripts/*.js')
     .pipe(changed('./dist/scripts'))
     .pipe(ngAnnotate({ single_quotes: true}))
-    .pipe(jshint())
+    .pipe(jshint(config.jshint))
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify))
     .pipe(gulp.dest('./dist/scripts'));
@@ -194,11 +194,10 @@ gulp.task('compile:js', function () {
 gulp.task('compile:css', ['sprites'], function () {
     return gulp.src('./src/styles/*.scss')
     .pipe(plumber())
-    .pipe(changed('./dist/styles'))
     .pipe(sourcemaps.init())
     .pipe(sass({outputStyle: 'expanded'}))
     .pipe(autoPrefixer({browsers: ['last 2 versions']}))
-    .pipe(csslint())
+    .pipe(csslint(config.csslint))
     .pipe(csslint.reporter())
     .pipe(notify(csshintNotify))
     .pipe(sourcemaps.write('./'))
@@ -241,12 +240,18 @@ gulp.task('build:assets', ['clean', 'compile'], function () {
     .pipe(gulp.dest('./build'));
 });
 
+gulp.task('build:img', ['sprites'], function () {
+    return gulp.src('./dist/images/**/*')
+    .pipe(imagemin())
+    .pipe(gulp.dest('./build/images'));
+});
+
 gulp.task('clean', function () {
     return gulp.src('./build')
         .pipe(vinylPaths(del));
 });
 
-gulp.task('build', ['build:assets', 'build:html']);
+gulp.task('build', ['init', 'build:assets', 'build:html', 'build:img']);
 
 gulp.task('publish', []);
 
