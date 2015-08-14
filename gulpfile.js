@@ -176,11 +176,7 @@ gulp.task('sprites', function () {
     var imageFilter = filter('*.png');
     var sassFilter = filter('*.scss');
     return gulp.src('./src/images/icon/*')
-    .pipe(sprite({ 
-        imgName: 'sprite.png', 
-        cssName: 'sprite.scss', 
-        imgPath: '{{@@asset}}/images/sprite.png' 
-    }))
+    .pipe(sprite({ imgName: 'sprite.png', cssName: 'sprite.scss', imgPath: '{{@@asset}}/images/sprite.png' }))
     .pipe(imageFilter)
     .pipe(gulp.dest('./dist/images'))
     .pipe(imageFilter.restore())
@@ -222,7 +218,7 @@ gulp.task('sass', function () {
     .pipe(csslint(config.csslint))
     .pipe(csslint.reporter())
     .pipe(notify(csshintNotify))
-    .pipe(replace(/{{@@asset}}/ig, '..'))
+    .pipe(replace(/{{@@asset}}/ig, ''))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./dist/styles'));
 });
@@ -283,7 +279,7 @@ gulp.task('build', gulpsync.sync(['init', 'build:assets', 'build:html', 'build:i
 
 gulp.task('deploy', function () {
     return gulp.src('./build/**/*')
-    .pipe(ghPage());
+    .pipe(ghPage({ remoteUrl: 'git@github.com:serenader2014/gulp-workflow.git', branch: 'gh-pages' }));
 });
 
 gulp.task('init', shell.task(['bower install']));
