@@ -1,0 +1,1 @@
+{"version":3,"sources":["styles/module.min.css"],"names":[],"mappings":"AAAA,KACE,WAAY,KAGd,IACE,WAAY","file":"styles/module.min-f523110404.css","sourcesContent":["html {\n  background: #ccc;\n}\n\ndiv {\n  text-align: center;\n}\n\n/*# sourceMappingURL=module.css.map */"],"sourceRoot":"/source/"}
