@@ -2,5 +2,5 @@ node_modules
 dist
 build
 .sass-cache
-src/styles/vars
+src/styles/vars/sprite.scss
 .publish

@@ -6,6 +6,7 @@ var sass         = require('gulp-sass');
 var jade         = require('gulp-jade');
 var size         = require('gulp-size');
 var gulpsync     = require('gulp-sync')(gulp);
+var qiniu        = require('gulp-qiniu');
 var shell        = require('gulp-shell');
 var vinylPaths   = require('vinyl-paths');
 var uglify       = require('gulp-uglify');
@@ -17,6 +18,7 @@ var inject       = require('gulp-inject');
 var plumber      = require('gulp-plumber');
 var changed      = require('gulp-changed');
 var csslint      = require('gulp-csslint');
+var replace      = require('gulp-replace');
 var minifyHtml   = require('gulp-htmlmin');
 var browserSync  = require('browser-sync');
 var htmlhint     = require('gulp-htmlhint');
@@ -34,6 +36,7 @@ var autoPrefixer = require('gulp-autoprefixer');
 var iconfontCss  = require('gulp-iconfont-css');
 
 var config       = require('./config');
+var cdn          = require('./cdn-config');
 var scriptTmpl   = '<script type="text/javascript" src="{{src}}"></script>';
 var cssTmpl      = '<link href="{{src}}" rel="stylesheet" />';
 var dep;
@@ -88,7 +91,7 @@ function injectBowerFile () {
             } else if (extname === '.css') {
                 tmpl = cssTmpl;
             }
-            return tmpl.replace('{{src}}', filepath);
+            return tmpl.replace('{{src}}', '{{@@asset}}' + filepath);
         }
     });
 }
@@ -100,7 +103,7 @@ function injectScript () {
             var str = '';
             target  = target.path.split(__dirname)[1].split(path.sep).join('/').substr(4);
             dep[target].include.scripts.forEach(function (s) {
-                str = str + scriptTmpl.replace('{{src}}',  s) + '\n';
+                str = str + scriptTmpl.replace('{{src}}', '{{@@asset}}' + s) + '\n';
             });
             return str;
         }
@@ -114,7 +117,7 @@ function injectCss () {
             var str = '';
             target  = target.path.split(__dirname)[1].split(path.sep).join('/').substr(4);
             dep[target].include.styles.forEach(function (s) {
-                str = str + cssTmpl.replace('{{src}}', s) + '\n';
+                str = str + cssTmpl.replace('{{src}}', '{{@@asset}}' + s) + '\n';
             });
             return str;
         }
@@ -146,6 +149,29 @@ gulp.task('inject:dep', function () {
     .pipe(gulp.dest('./dist'));
 });
 
+gulp.task('asset:local', function () {
+    return gulp.src('./dist/*.html')
+    .pipe(replace(/{{@@asset}}/ig, ''))
+    .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('asset:cdn', function () {
+    return gulp.src('./dist/*.html')
+    .pipe(replace(/{{@@asset}}/ig, '.'))
+    .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('qiniu', function () {
+    return gulp.src(['./build/**/*', '!./build/*.html'])
+    .pipe(qiniu({ 
+        accessKey: cdn.qiniu.accessKey, 
+        secretKey: cdn.qiniu.secretKey, 
+        bucket: cdn.qiniu.bucket 
+    }, {
+        dir: cdn.qiniu.dir
+    }));
+});
+
 gulp.task('sprites', function () {
     var imageFilter = filter('*.png');
     var sassFilter = filter('*.scss');
@@ -153,7 +179,7 @@ gulp.task('sprites', function () {
     .pipe(sprite({ 
         imgName: 'sprite.png', 
         cssName: 'sprite.scss', 
-        imgPath: '../images/sprite.png' 
+        imgPath: '{{@@asset}}/images/sprite.png' 
     }))
     .pipe(imageFilter)
     .pipe(gulp.dest('./dist/images'))
@@ -196,11 +222,12 @@ gulp.task('sass', function () {
     .pipe(csslint(config.csslint))
     .pipe(csslint.reporter())
     .pipe(notify(csshintNotify))
+    .pipe(replace(/{{@@asset}}/ig, '..'))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./dist/styles'));
 });
 
-gulp.task('compile:html', ['inject:dep']);
+gulp.task('compile:html', gulpsync.sync(['inject:dep', 'asset:local']));
 
 gulp.task('compile', ['compile:js', 'compile:html', 'compile:css']);
 
