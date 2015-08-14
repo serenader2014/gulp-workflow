@@ -3,3 +3,5 @@ dist
 build
 .sass-cache
 src/styles/vars/sprite.scss
+cdn-config.js
+.publish

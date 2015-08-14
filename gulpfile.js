@@ -5,6 +5,7 @@ var rev          = require('gulp-rev');
 var sass         = require('gulp-sass');
 var jade         = require('gulp-jade');
 var size         = require('gulp-size');
+var gulpsync     = require('gulp-sync')(gulp);
 var qiniu        = require('gulp-qiniu');
 var shell        = require('gulp-shell');
 var vinylPaths   = require('vinyl-paths');
@@ -35,6 +36,7 @@ var autoPrefixer = require('gulp-autoprefixer');
 var iconfontCss  = require('gulp-iconfont-css');
 
 var config       = require('./config');
+var cdn          = require('./cdn-config');
 var scriptTmpl   = '<script type="text/javascript" src="{{src}}"></script>';
 var cssTmpl      = '<link href="{{src}}" rel="stylesheet" />';
 var dep;
@@ -126,10 +128,11 @@ gulp.task('serve', ['compile:css', 'compile:html', 'compile:js'], function () {
     browserSync.init({ server: { baseDir: './dist' }, port: 9000 });
 
     gulp.watch('dist/**').on('change', browserSync.reload);
-    gulp.watch('src/styles/**/*.scss', ['compile:css']);
+    gulp.watch(['src/styles/**/*.scss'], ['sass']);
     gulp.watch('src/scripts/*.js', ['compile:js']);
     gulp.watch(['src/*.jade', 'dependencies-map.json'], ['compile:html']);
     gulp.watch('src/images/*.png', ['sprites']);
+    gulp.watch('src/svgs/*.svg', ['iconfont']);
 }); 
 
 gulp.task('inject:dep', function () {
@@ -146,26 +149,26 @@ gulp.task('inject:dep', function () {
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('asset:local', ['inject:dep'], function () {
+gulp.task('asset:local', function () {
     return gulp.src('./dist/*.html')
-    .pipe(replace(/{{@@asset}}/ig, '.'))
+    .pipe(replace(/{{@@asset}}/ig, ''))
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('asset:cdn', ['inject:dep'], function () {
+gulp.task('asset:cdn', function () {
     return gulp.src('./dist/*.html')
     .pipe(replace(/{{@@asset}}/ig, '.'))
     .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('qiniu', function () {
-    return gulp.src(['./build/scripts/*', './build/styles/*'])
+    return gulp.src(['./build/**/*', '!./build/*.html'])
     .pipe(qiniu({ 
-        accessKey: config.qiniu.accessKey, 
-        secretKey: config.qiniu.secretKey, 
-        bucket: config.qiniu.bucket 
+        accessKey: cdn.qiniu.accessKey, 
+        secretKey: cdn.qiniu.secretKey, 
+        bucket: cdn.qiniu.bucket 
     }, {
-        dir: config.qiniu.dir
+        dir: cdn.qiniu.dir
     }));
 });
 
@@ -173,12 +176,25 @@ gulp.task('sprites', function () {
     var imageFilter = filter('*.png');
     var sassFilter = filter('*.scss');
     return gulp.src('./src/images/icon/*')
-    .pipe(sprite({ imgName: 'sprite.png', cssName: 'sprite.scss', imgPath: '../images/sprite.png' }))
+    .pipe(sprite({ imgName: 'sprite.png', cssName: 'sprite.scss', imgPath: '{{@@asset}}/images/sprite.png' }))
     .pipe(imageFilter)
     .pipe(gulp.dest('./dist/images'))
     .pipe(imageFilter.restore())
     .pipe(sassFilter)
     .pipe(gulp.dest('./src/styles/vars'));
+});
+
+gulp.task('iconfont', function () {
+    return gulp.src('./src/svgs/*', {base: './src'})
+    .pipe(iconfontCss({ 
+        fontName: 'iconfont', 
+        fontPath: '../fonts/',
+        path: 'scss', 
+        targetPath: '../../src/styles/vars/iconfont.scss',
+        normalize: true
+    }))
+    .pipe(iconfont({ fontName: 'iconfont' }))
+    .pipe(gulp.dest('./dist/fonts/'));
 });
 
 gulp.task('compile:js', function () {
@@ -191,7 +207,9 @@ gulp.task('compile:js', function () {
     .pipe(gulp.dest('./dist/scripts'));
 });
 
-gulp.task('compile:css', ['sprites'], function () {
+gulp.task('compile:css', gulpsync.sync(['sprites', 'iconfont', 'sass']));
+
+gulp.task('sass', function () {
     return gulp.src('./src/styles/*.scss')
     .pipe(plumber())
     .pipe(sourcemaps.init())
@@ -200,15 +218,16 @@ gulp.task('compile:css', ['sprites'], function () {
     .pipe(csslint(config.csslint))
     .pipe(csslint.reporter())
     .pipe(notify(csshintNotify))
+    .pipe(replace(/{{@@asset}}/ig, ''))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./dist/styles'));
 });
 
-gulp.task('compile:html', ['inject:dep', 'asset:local']);
+gulp.task('compile:html', gulpsync.sync(['inject:dep', 'asset:local']));
 
 gulp.task('compile', ['compile:js', 'compile:html', 'compile:css']);
 
-gulp.task('build:html', ['build:assets'], function () {
+gulp.task('build:html', function () {
     return gulp.src('./build/*.html')
     .pipe(size({ showFiles: true }))
     .pipe(minifyHtml({ collapseWhitespace: true }))
@@ -240,10 +259,15 @@ gulp.task('build:assets', ['clean', 'compile'], function () {
     .pipe(gulp.dest('./build'));
 });
 
-gulp.task('build:img', ['sprites'], function () {
+gulp.task('build:img', function () {
     return gulp.src('./dist/images/**/*')
     .pipe(imagemin())
     .pipe(gulp.dest('./build/images'));
+});
+
+gulp.task('build:iconfont', function () {
+    return gulp.src('./dist/fonts/*')
+    .pipe(gulp.dest('./build/fonts'));
 });
 
 gulp.task('clean', function () {
@@ -251,9 +275,12 @@ gulp.task('clean', function () {
         .pipe(vinylPaths(del));
 });
 
-gulp.task('build', ['init', 'build:assets', 'build:html', 'build:img']);
+gulp.task('build', gulpsync.sync(['init', 'build:assets', 'build:html', 'build:img', 'build:iconfont']));
 
-gulp.task('publish', []);
+gulp.task('deploy', function () {
+    return gulp.src('./build/**/*')
+    .pipe(ghPage({ remoteUrl: 'git@github.com:serenader2014/gulp-workflow.git', branch: 'gh-pages' }));
+});
 
 gulp.task('init', shell.task(['bower install']));
 

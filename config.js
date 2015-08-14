@@ -1,13 +1,8 @@
 module.exports = {
-    qiniu: {
-        accessKey: '',
-        secretKey: '',
-        bucket: '',
-        dir: ''
-    },
     csslint: {
         'box-sizing': false,
-        'zero-units': false
+        'zero-units': false,
+        'bulletproof-font-face': false
     },
     jshint: {
         node: true,
