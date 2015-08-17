@@ -97,11 +97,14 @@ Gulp 会分析每个 HTML 页面所引用的静态资源，然后分别为每个
 
 这个项目最主要的  Gulp task 有以下几个：
 
-- `init` : 初始化项目，会自动下载 bower 依赖包。
-- `serve/default`: 进入开发环境，会开始监听文件的变动，并且实时编译代码和刷新浏览器。
-- `compile`: 编译代码，生成能够在浏览器运行的代码。该任务由 `compile:js`、 `compile:css` 、 `compile:html` 任务构成。
-- `build`: 编译打包代码，生成适合在生产环境运行的代码。该任务由  `build:html` 、 `build:assets`、 `build:img`、`build:iconfont` 这几个任务构成。
-- `deploy`: 自动部署 `build` 目录下的所有文件到 Github Pages 上。
+| **Gulp Task**      | **描述**
+|:------------------|:---------------
+| `init`             | 初始化项目，会自动下载 bower 依赖包。
+| `serve/default`    | 进入开发环境，会开始监听文件的变动，并且实时编译代码和刷新浏览器。
+| `compile`          | 编译代码，生成能够在浏览器运行的代码。该任务由 `compile:js`、 `compile:css` 、 `compile:html` 任务构成。
+| `build`            | 编译打包代码，生成适合在生产环境运行的代码。该任务由  `build:html` 、 `build:assets`、 `build:img`、`build:iconfont` 这几个任务构成。
+| `deploy`           | 自动部署 `build` 目录下的所有文件到 Github Pages 上。
+
 
 更详细的任务配置请查看 `gulpfile.js` 。
 
@@ -109,3 +112,28 @@ Gulp 会分析每个 HTML 页面所引用的静态资源，然后分别为每个
 
 - [ ] 添加单元测试和E2E测试
 - [ ] 完善项目模板
+
+# License
+
+(The MIT License)
+
+Copyright (c) 2015 serenader &lt;xsylive@gmail.com&gt;
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
