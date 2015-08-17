@@ -117,7 +117,7 @@ Gulp 会分析每个 HTML 页面所引用的静态资源，然后分别为每个
 
 (The MIT License)
 
-Copyright (c) 2015 serenader &lt;xsylive@gmail.com&gt;
+Copyright (c) 2015 serenader &lt;xyslive@gmail.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
